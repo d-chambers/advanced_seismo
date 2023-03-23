@@ -34,9 +34,12 @@ def exact_p_velocity(
         The ration of Vp_0 to Vs_0.
     """
     f = get_f(vp_vs_ratio)
-    term1 = 1 + epsilon * np.sin(theta) ** 2 - f / 2
-    term2 = (1 + (2 * epsilon * np.sin(theta)) ** 2 / f) ** 2
+    sin_theta = np.sin(theta)
+
+    term1 = 1 + epsilon * sin_theta ** 2 - f / 2
+    term2 = (1 + (2 * (epsilon * sin_theta**2)/f)) ** 2
     term3 = (2 * (epsilon - delta) * np.sin(2 * theta) ** 2) / f
+
     out = term1 + f / 2 * np.sqrt(term2 - term3)
     return np.sqrt(out)
 
@@ -62,17 +65,21 @@ def approx_p_velocity(
         The ration of Vp_0 to Vs_0.
     """
     f = get_f(vp_vs_ratio)
-    term1 = 1 + 2 * delta * np.sin(theta) ** 2 * np.cos(theta) ** 2
-    term2 = 2 * epsilon * np.sin(theta) ** 4
-    term3 = (4 / f) * (epsilon - delta) * (epsilon * np.sin(theta) ** 2 + delta * np.cos(theta) ** 2)
-    term4 = np.sin(theta) ** 4 * np.cos(theta) ** 2
+    cos_theta = np.cos(theta)
+    sin_theta = np.sin(theta)
+
+    term1 = 1 + 2 * delta * sin_theta ** 2 * cos_theta ** 2
+    term2 = 2 * epsilon * sin_theta ** 4
+    term3 = (4 / f) * (epsilon - delta) * (epsilon * sin_theta ** 2 + delta * cos_theta ** 2)
+    term4 = sin_theta ** 4 * cos_theta ** 2
+
     out = term1 + term2 + term3 * term4
     return np.sqrt(out)
 
 
 def compare(theta, epsilon, deltas, vp_vs_ratio):
     """Create a plot comparing the approximate to exact for different values."""
-    fig, axes = plt.subplots(2, len(deltas), sharex=True, figsize=(10, 1.5 * len(deltas)))
+    fig, axes = plt.subplots(2, len(deltas), sharex=True, sharey='row', figsize=(10, 1.5 * len(deltas)))
 
     theta_degrees = np.rad2deg(theta)
 
@@ -88,10 +95,12 @@ def compare(theta, epsilon, deltas, vp_vs_ratio):
         ax1.plot(theta_degrees, approx, ls='--', label='approx')
         ax1.plot(theta_degrees, exact, ls='-', label='exact')
         ax1.set_title(f'$\delta=${delta:.02f}')
+        ax1.set_xlim(0, 90)
 
         # plot residuals
         ax2.plot(theta_degrees, resid, label='Residual')
         ax2.set_xlabel(r"angle from vertical ($\theta$)")
+        ax2.set_xlim(0, 90)
 
         # apply y axis labels
         if ind == 0:

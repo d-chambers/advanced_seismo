@@ -1,0 +1,195 @@
+---
+title: "Advanced Sesimology: Homework 2"
+date: 03/23/2023
+author:
+  - name: Derrick Chambers
+    url: https://derchambers.com
+    affiliation: Colorado School of Mines
+    affiliation-url: https://mines.edu
+
+format:
+  pdf:
+    toc: true
+    toc-depth: 1
+    number-sections: true
+    colorlinks: true
+
+# bibliography: references.bib
+---
+
+
+
+# Question 1
+
+:::{.callout-note appearance="minimal"}
+Using the definition of the Thomsen parameter $\delta$
+
+$$
+\delta \equiv \frac{(C_{13}+C_{55})^2-(C_{33}-C_{55})^2}{2 C_{33}(C_{33}-C_{55})}
+$$
+
+find its minimum possible value for the vertical-velocity ratio $V_{P0}/V_{S0}$ = 3.
+:::
+
+Given $V_{P0} = \sqrt{C_{33}/\rho}$ and $V_{S0} = \sqrt{C_{55}/\rho}$, then $C_{33} = 9 C_{55}$.
+
+Substituting in above, 
+
+
+$$
+\delta = \frac{(C_{13}+C_{55})^2-(8C_{55})^2}{2 * 9C_{55} * 8C_{55}}
+$$
+
+
+$$
+\delta = \frac{(C_{13}+C_{55})^2-64C_{55}^2}{144 C_{55}^2}
+$$
+
+This function is minimized when the quadradic term vanishes, hence when $C_{13} = - C_{55}$.
+
+$$
+\delta_{min} = \frac{(-C_{55}+C_{55})^2-64C_{55}^2}{144 C_{55}^2} = \frac{-64C_{55}^2}{144 C_{55}^2} 
+$$
+
+$$
+\delta_{min} = -\frac{4}{9}
+$$
+
+
+
+# Question 2
+
+:::{.callout-note appearance="minimal"}
+Determine the maximum difference between the P-wave group (ψ) and phase (θ)
+angles for an elliptically anisotropic medium with $\epsilon = 0.2$. You can use the weakanisotropy approximation,
+
+$$
+\psi-\theta \approx [\delta+2(\epsilon-\delta) \sin ^2 \theta] \sin 2 \theta
+$$
+:::
+
+Given the medium is elliptically anisotropic, $\delta = \epsilon$ hence the above eqaution reduces to:
+
+$$
+\psi-\theta \approx \delta \sin 2 \theta
+$$
+
+Which is maximized at when $sin 2 \theta = 1$ hence $\theta = 45^{\circ}$
+
+
+$$
+\psi-\theta \approx \delta = 0.2 \approx 11.5^{\circ}
+$$
+
+# Question 3
+
+:::{.callout-note appearance="minimal"}
+
+The exact P-wave phase velocity in transversely isotropic media expressed through
+the Thomsen parameters can be written as
+
+$$
+\frac{V^2(\theta)}{V_{P 0}^2}=1+\epsilon \sin ^2 \theta-\frac{f}{2}+\frac{f}{2} \sqrt{(1+\frac{2 \epsilon \sin ^2 \theta}{f})^2-\frac{2(\epsilon-\delta) \sin ^2 2 \theta}{f}}
+$${#eq-1}
+
+where $\theta$ is the angle between the phase-velocity vector and the symmetry axis, and
+$f ≡ 1 − V^{2}_{S0}/V^{2}_{P0}$.
+
+The weak-anisotropy approximation for $V^{2}(θ)$ that contains linear and quadratic
+terms in the anisotropy coefficients $\epsilon$ and $\delta$ has the following form:
+
+$$
+\frac{V^2(\theta)}{V_{P 0}^2} \approx 1+2 \delta \sin ^2 \theta \cos ^2 \theta+2 \epsilon \sin ^4 \theta+\frac{4}{f}(\epsilon-\delta)(\epsilon \sin ^2 \theta+\delta \cos ^2 \theta) \sin ^4 \theta \cos ^2 \theta
+$${#eq-2}
+
+Compare the velocity computed from @eq-2 with the exact $V (θ)$ from @eq-1
+for models with $V_{P0}/V_{S0} = 2$, $\epsilon = 0.6$, and $\delta = 0.1, 0.3,$ and $0.5$ ($V_{P0}$ can be arbitrary).
+
+How and why does the accuracy of @eq-2 change with the coefficient $\delta$?
+:::
+
+@fig-p-velocities shows the comparisons for the given model and requested $\delta$ values.
+
+```{python}
+#| echo: false
+#| label: fig-p-velocities
+#| fig-cap: "Exact and approximate P-velocity"
+
+import matplotlib.pyplot as plt
+import numpy as np
+import homework_2 as hw2
+
+# define parameters
+theta_radians = np.linspace(0, np.pi / 2, 200)
+vp_vs_ratio = 2
+epsilon = 0.6
+deltas = [0.1, 0.3, 0.5]
+# create paths
+fig, _ = hw2.compare(theta_radians, epsilon, deltas, vp_vs_ratio)
+```
+
+As the value of $\delta$ increases, the accuracy of @eq-2 increases as seen by the decrease in the
+residuals in the bottom panels of @fig-p-velocities. This is because the accuracy of @eq-2 gets
+better as the anisotropy becomes more elliptical (e.g, as $\epsilon$ and $\delta$ approach being equal).
+
+In fact, for the elliptical case we can simplify @eq-1 to:
+
+$$
+\frac{V^2(\theta)}{V_{P 0}^2}=1+\epsilon \sin ^2 \theta-\frac{f}{2}+\frac{f}{2} \sqrt{(1+\frac{2 \epsilon \sin ^2 \theta}{f})^2}
+$$
+
+
+$$
+\frac{V^2(\theta)}{V_{P 0}^2}=1+\epsilon \sin ^2 \theta-\frac{f}{2}+\frac{f}{2} (1+\frac{2 \epsilon \sin ^2 \theta}{f})
+$$
+
+$$
+\frac{V^2(\theta)}{V_{P 0}^2}=1+\epsilon \sin ^2  \theta + \epsilon \sin ^2 \theta
+$$
+
+$$
+\frac{V^2(\theta)}{V_{P 0}^2} = 1 + 2 \epsilon \sin ^2 \theta
+$${#eq-3}
+
+and we can simplify @eq-2:
+
+
+$$
+\frac{V^2(\theta)}{V_{P 0}^2} \approx 1+2 \delta \sin ^2 \theta \cos ^2 \theta+2 \epsilon \sin ^4 \theta
+$$
+
+$$
+\frac{V^2(\theta)}{V_{P 0}^2} \approx 1+2 \epsilon \sin ^2 \theta \cos ^2 \theta+2 \epsilon \sin ^4 \theta
+$$
+
+$$
+\frac{V^2(\theta)}{V_{P 0}^2} \approx 1+2 \epsilon \sin ^2 (\sin^2 \theta + \cos^2 \theta)
+$$
+
+$$
+\frac{V^2(\theta)}{V_{P 0}^2} \approx 1+2 \epsilon \sin ^2
+$${#eq-4}
+
+and since @eq-3 and @eq-4 are equal the P wave velocity approximation given by @eq-2 becomes
+the exact solution for the case of elliptical anisotropy.
+
+Plotting values at and around the elliptical case (@fig-p-velocities-elliptical) confirms
+this conclusion.
+
+```{python}
+#| echo: false
+#| label: fig-p-velocities-elliptical
+#| fig-cap: "Exact and approximate P-velocity"
+
+import matplotlib.pyplot as plt
+import numpy as np
+import homework_2 as hw2
+
+# define parameters
+theta_radians = np.linspace(0, np.pi / 2, 200)
+vp_vs_ratio = 2
+epsilon = 0.6
+deltas = [0.55, 0.6, 0.65]
+# create paths
+fig, _ = hw2.compare(theta_radians, epsilon, deltas, vp_vs_ratio)
+```
