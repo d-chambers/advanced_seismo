@@ -9,7 +9,7 @@ author:
 
 format:
   pdf:
-    toc: true
+    toc: false
     toc-depth: 1
     number-sections: true
     colorlinks: true
@@ -78,7 +78,7 @@ Which is maximized at when $sin 2 \theta = 1$ hence $\theta = 45^{\circ}$
 
 
 $$
-\psi-\theta \approx \delta = 0.2 \approx 11.5^{\circ}
+(\psi-\theta)_{max} \approx \delta = 0.2 \approx 11.5^{\circ}
 $$
 
 # Question 3
