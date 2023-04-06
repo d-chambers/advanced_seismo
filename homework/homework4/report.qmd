@@ -1,0 +1,153 @@
+---
+title: "Advanced Sesimology: Homework 4"
+date: 04/05/2023
+author:
+  - name: Derrick Chambers
+    url: https://derchambers.com
+    affiliation: Colorado School of Mines
+    affiliation-url: https://mines.edu
+
+format:
+  pdf:
+    toc: false
+    toc-depth: 1
+    number-sections: true
+    colorlinks: true
+
+bibliography: references.bib
+---
+
+# Prompt
+The notion of elliptical anisotropy and the medium “anellipticity” plays an important
+role in understanding time-domain P-wave signatures in VTI media. A few years ago
+I received a letter from a former colleague saying that he had found an “overlooked”
+condition for elliptical anisotropy: 
+
+$$
+\delta = -f / 2 = - (1 - V_{S0}^2 / V_{P0}^2) / 2
+$${#eq-delta}
+
+Analyze the phase velocities and polarizations of P- and SV-waves in TI media that 
+satisfy this condition and find out whether such models are indeed elliptical in some sense.
+Hint: After rewriting the above condition in terms of the stiffness coefficients, start
+your investigation with the Christoffel equation and consider two cases corresponding
+to $c_{11} > c_{55}$ (normal situation) and $c_{11} ≤ c_{55}$; you can assume that $c_{33} > c_{55}$.
+It would be helpful to compute or sketch the polar slowness curves (i.e., the vertical cross-section
+of the slowness surface) for both in-plane polarized modes.
+
+# Simplification of @eq-delta
+
+@eq-delta can be simplified using the Thomsen parameters defined in 
+Analyzing the @eq-delta using the definition of Thomsen parameters defined by
+@tsvankin2012seismic[Equations 1.44, 1.45, and 1.47]
+
+$$
+V_{P0} \equiv \sqrt{\frac{c_{33}}{\rho}}
+$${#eq-vp0}
+
+$$
+V_{S0} \equiv \sqrt{\frac{c_{55}}{\rho}}
+$${#eq-vs0}
+
+$$
+\delta \equiv \frac{(c_{13} + c_{55})^2 - (c_{33} - c_{55})^2}{2c_{33}(c_{33}-c_{55})}
+$${#eq-delta2}
+
+By first substituting @eq-vp0, @eq-vs0, and @eq-delta2 into @eq-delta and simplifying:
+
+$$
+\frac{(c_{13} + c_{55})^2 - (c_{33} - c_{55})^2}{2c_{33}(c_{33}-c_{55})} 
+= - (1 - \frac{c_{55}}{\rho} / \frac{c_{33}}{\rho}) / 2
+$$
+
+$$
+\frac{(c_{13} + c_{55})^2 - (c_{33} - c_{55})^2}{c_{33}(c_{33}-c_{55})} 
+= - (1 - \frac{c_{55}}{c_{33}})
+$$
+
+$$
+\frac{(c_{13} + c_{55})^2 - (c_{33} - c_{55})^2}{(c_{33}-c_{55})} 
+= - (c_{33} - c_{55})
+$$
+
+$$
+\frac{(c_{13} + c_{55})^2 - (c_{33} - c_{55})^2}{(c_{33}-c_{55})} 
+= - (c_{33} - c_{55})
+$$
+
+$$
+(c_{13} + c_{55})^2 - (c_{33} - c_{55})^2 = - (c_{33} - c_{55})^2
+$$
+
+$$
+(c_{13} + c_{55})^2 = 0
+$$
+
+$$
+c_{13} = -c_{55}
+$${#eq-delta-simplified}
+
+# Cristoffel Equation
+
+The Christoffel equation for in-plane polarized phases in VTI media can be expressed by 
+Equation 1.37 [@tsvankin2012seismic]:
+
+$$
+\begin{bmatrix}
+c_{11}sin^2 \theta + c_{55} cos^2 \theta - \rho V^2 & (c_{13}+c_{55})sin \theta cos \theta \\
+(c_{13}+c_{55})sin \theta cos \theta & c_{55}sin^2 \theta + c_{33} cos^2 \theta - \rho V^2
+\end{bmatrix}
+\begin{bmatrix}
+U_1\\
+U_3
+\end{bmatrix}
+= 0
+$${#eq-christoffel_base}
+
+where $\theta$ is the in-plane angle measured from the symetry axis.
+
+Substituting @eq-delta-simplified into @eq-christoffel_base:
+
+$$
+\begin{bmatrix}
+c_{11}sin^2 \theta + c_{55} cos^2 \theta - \rho V^2 & 0 \\
+0 & c_{55}sin^2 \theta + c_{33} cos^2 \theta - \rho V^2
+\end{bmatrix}
+\begin{bmatrix}
+U_1\\
+U_3
+\end{bmatrix}
+= 0
+$${#eq-christoffel_reduced}
+
+Which clearly yields two solutions for $V$:
+
+$$
+\sqrt{\frac{c_{11}sin^2 \theta + c_{55} cos^2 \theta}{\rho}} = V_1
+$${#eq-v1}
+
+$$
+\sqrt{\frac{c_{55}sin^2 \theta + c_{33} cos^2 \theta}{\rho}} = V_2
+$${#eq-v2}
+
+and the resulting polarization vectors are:
+
+$$
+\overrightarrow{U_1} = 
+\begin{bmatrix}
+0 \\ 1
+\end{bmatrix}
+\\
+,
+\overrightarrow{U_2} = 
+\begin{bmatrix}
+1 \\ 0
+\end{bmatrix}
+$${#eq-polarization}
+
+Which is interesting because the polarization vectors don't change with slowness direction!
+
+Also, it is important to note that @eq-v1 and @eq-v2 are both real because $c_{11}$, $c_{33}$ and
+$c_{55}$ are positive definite.
+
+# References
