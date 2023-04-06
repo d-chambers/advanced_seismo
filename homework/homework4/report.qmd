@@ -123,31 +123,71 @@ $${#eq-christoffel_reduced}
 Which clearly yields two solutions for $V$:
 
 $$
-\sqrt{\frac{c_{11}sin^2 \theta + c_{55} cos^2 \theta}{\rho}} = V_1
+\sqrt{\frac{c_{11}sin^2 \theta + c_{55} cos^2 \theta}{\rho}} = V_a
 $${#eq-v1}
 
 $$
-\sqrt{\frac{c_{55}sin^2 \theta + c_{33} cos^2 \theta}{\rho}} = V_2
+\sqrt{\frac{c_{33}cos^2 \theta + c_{55} sin^2 \theta}{\rho}} = V_b
 $${#eq-v2}
 
 and the resulting polarization vectors are:
 
 $$
-\overrightarrow{U_1} = 
+\overrightarrow{U_a} = 
 \begin{bmatrix}
-0 \\ 1
+1 \\ 0
 \end{bmatrix}
 \\
 ,
-\overrightarrow{U_2} = 
+\overrightarrow{U_b} = 
 \begin{bmatrix}
-1 \\ 0
+0 \\ 1
 \end{bmatrix}
 $${#eq-polarization}
 
 Which is interesting because the polarization vectors don't change with slowness direction!
 
-Also, it is important to note that @eq-v1 and @eq-v2 are both real because $c_{11}$, $c_{33}$ and
-$c_{55}$ are positive definite.
+Also, it is important to note that $V_a$ and $V_b$ (@eq-v1 and @eq-v2) are both real 
+because $c_{11}$, $c_{33}$ and $c_{55}$ are positive definite and $\theta$ is defined from
+$0^{\circ}$ (vertical) to $90^{\circ}$ (horizontal). 
+
+# Analysis
+
+Given $c_{33} > c_{55}$, there are two cases to consider based on the relation between $c_{11}$
+and $c_{55}$.
+
+## Case 1: $c_{11} > c_{55}$
+
+Case 1 is considered the "normal" case. Apart from the odd polarizations for this 
+scenario, as mentioned above, the slowness surfaces are elliptical.
+
+![
+Slowness surfaces for case 1: $c_{11} > c_{55}$.
+$c_{11}$=1.5, $c_{33}$=1.5, $c_{55}$=1, $\rho$=1.0.
+](outputs/case1.png){#fig-1}
+
+In this case we can't say whether $V_a$ or $V_b$ is larger for all values of $\theta$ 
+since both $c_{11}$ and $c_{33}$ are greater than $c_{55}$. However, it is clear
+for small values of $\theta$ $V_b$ will be larger and for larger values of $\theta$
+(near $90^{\circ}$) $V_{a}$ will be larger.
+
+## Case 2a: $c_{11} = c_{55}$
+
+![
+Slowness surfaces for case 2: $c_{11} = c_{55}$
+$c_{11}$=1.0, _{33}$=1.5, $c_{55}$=1, $\rho$=1.0.
+](outputs/case_2a.png){#fig-2}
+
+
+## Case 2b: $c_{11} < c_{55}$
+
+![
+Slowness surfaces for case 2: $c_{11} < c_{55}$
+$c_{11}$=0.75, $c_{33}$=1.5, $c_{55}$=1, $\rho$=1.0.
+](outputs/case_2b.png){#fig-3}
+
+
+
+
 
 # References
