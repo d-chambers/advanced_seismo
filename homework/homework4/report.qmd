@@ -37,9 +37,8 @@ of the slowness surface) for both in-plane polarized modes.
 
 # Simplification of @eq-delta
 
-@eq-delta can be simplified using the Thomsen parameters defined in 
-Analyzing the @eq-delta using the definition of Thomsen parameters defined by
-@tsvankin2012seismic[Equations 1.44, 1.45, and 1.47]
+@eq-delta can be simplified by rewriting it in terms of stiffness coefficients
+[@tsvankin2012seismic, Equations 1.44, 1.45, and 1.47]:
 
 $$
 V_{P0} \equiv \sqrt{\frac{c_{33}}{\rho}}
@@ -90,7 +89,7 @@ $${#eq-delta-simplified}
 # Cristoffel Equation
 
 The Christoffel equation for in-plane polarized phases in VTI media can be expressed by 
-Equation 1.37 [@tsvankin2012seismic]:
+[@tsvankin2012seismic, Equation 1.37]:
 
 $$
 \begin{bmatrix}
@@ -148,8 +147,8 @@ $${#eq-polarization}
 Which is interesting because the polarization vectors don't change with slowness direction!
 
 Also, it is important to note that $V_a$ and $V_b$ (@eq-v1 and @eq-v2) are both real 
-because $c_{11}$, $c_{33}$ and $c_{55}$ are positive definite and $\theta$ is defined from
-$0^{\circ}$ (vertical) to $90^{\circ}$ (horizontal). 
+because $c_{11}$, $c_{33}$ and $c_{55}$ are positive definite and $\theta$ is only 
+defined from $0^{\circ}$ (vertical) to $90^{\circ}$ (horizontal). 
 
 # Analysis
 
@@ -158,36 +157,36 @@ and $c_{55}$.
 
 ## Case 1: $c_{11} > c_{55}$
 
-Case 1 is considered the "normal" case. Apart from the odd polarizations for this 
-scenario, as mentioned above, the slowness surfaces are elliptical.
+Case 1 is considered the "normal" case. @fig-1 shows the slowness
+surface for a hypothetical that honors the stiffness coefficient relationships: 
 
 ![
 Slowness surfaces for case 1: $c_{11} > c_{55}$.
 $c_{11}$=1.5, $c_{33}$=1.5, $c_{55}$=1, $\rho$=1.0.
 ](outputs/case1.png){#fig-1}
 
-In this case we can't say whether $V_a$ or $V_b$ is larger for all values of $\theta$ 
-since both $c_{11}$ and $c_{33}$ are greater than $c_{55}$. However, it is clear
-for small values of $\theta$ $V_b$ will be larger and for larger values of $\theta$
-(near $90^{\circ}$) $V_{a}$ will be larger.
+The interesting thing about this case is that the slowness surfaces cross, meaning there
+isn't a strictly fast and slow mode, or the fast and slow modes don't correspond to a 
+single Eigen value from @eq-christoffel_reduced. The fast and slow modes therefore are composed 
+of combinations of $V_a$ and $V_b$ and hence have a non-elliptical slowness surface.  
 
-## Case 2a: $c_{11} = c_{55}$
+## Case 2a
+
+@fig-2 and @fig-3 show the slowness surfaces for two sub-cases,
+when $c_{11} = c_{55}$ and $c_{11} < c_{55}$.  
 
 ![
 Slowness surfaces for case 2: $c_{11} = c_{55}$
 $c_{11}$=1.0, _{33}$=1.5, $c_{55}$=1, $\rho$=1.0.
 ](outputs/case_2a.png){#fig-2}
 
-
-## Case 2b: $c_{11} < c_{55}$
-
 ![
 Slowness surfaces for case 2: $c_{11} < c_{55}$
 $c_{11}$=0.75, $c_{33}$=1.5, $c_{55}$=1, $\rho$=1.0.
 ](outputs/case_2b.png){#fig-3}
 
-
-
-
+In each of these cases the slowness surface do not cross, meaning
+the fast and slow phases are described by @eq-v1 and @eq-v2 which are
+purely elliptical. 
 
 # References

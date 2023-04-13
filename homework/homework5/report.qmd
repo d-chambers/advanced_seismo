@@ -1,0 +1,125 @@
+---
+title: "Advanced Sesimology: Homework 4"
+date: 04/05/2023
+author:
+  - name: Derrick Chambers
+    url: https://derchambers.com
+    affiliation: Colorado School of Mines
+    affiliation-url: https://mines.edu
+
+format:
+  pdf:
+    toc: false
+    toc-depth: 1
+    number-sections: true
+    colorlinks: true
+
+bibliography: references.bib
+---
+
+# Prompt
+Using the P-wave moveout equation for VTI media in terms of the parameter $\eta$,
+
+$$
+t^2(x) = 
+\underbrace{t_0^2}_{a}
++\underbrace{\frac{x^2}{V_{mmo}^2}}_{b}
++\underbrace{-\frac{2 \eta x^4}{V_{nmo}^2 [t_0^2 V_{nmo}^2 + (1+2 \eta) x^2]}}_{c}
+$${#eq-nmo}
+
+estimate the relative magnitude of the $x^4$-term compared to the squared zero-offset
+time $t_0^2$ and to the $x^2$-term. For simplicity, you can assume that the reflector depth
+$z \approx t0 V_{nmo}/2$ and express your results through the offset-to-depth ratio $x/z$. 
+Calculate both relative magnitudes for $x/z$ = 2 and $\eta$ = 0.2. 
+Do you think that the magnitude of the $x^4$-term is sufficiently large for reliable
+estimation of the parameter $\eta$ from nonhyperbolic moveout?
+
+# @eq-nmo in Terms of Offset to Depth Ratio
+
+Let $r = x/z$. Given $z \approx t0 V_{nmo}/2$ it follows:
+
+$$
+V_{nmo} \approx \frac{2z}{t_0}
+$${#eq-vnmo_x}
+
+Substituting @eq-vnmo_x into @eq-nmo,  
+
+$$
+t^2(x) = t_0^2
++\frac{x^2}{(\frac{2z}{t_0})^2}-
+\frac{2 \eta x^4}{\frac{4z^2}{t_0^2} [4z^2 + (1+2 \eta) x^2]}
+$$
+
+$$
+t^2(x) = t_0^2
++\frac{1}{4}r^2t_0^2-
+\frac{1}{4} 2 \eta r^2 t_0^2 x^2 \frac{1}{4z^2 + (1+2 \eta) x^2}
+$$
+
+$$
+t^2(x) = t_0^2
++\frac{1}{4}r^2t_0^2-
+\frac{1}{4z^2} 2 \eta r^2 t_0^2 x^2 \frac{1}{4 + (1+2 \eta) r^2}
+$$
+
+$$
+t^2(x) = t_0^2
++\frac{1}{4}r^2t_0^2-
+\frac{1}{4} 2 \eta r^4 t_0^2 \frac{1}{4 + (1+2 \eta) r^2}
+$$
+
+$$
+t^2(x) = \frac{1}{4}t_0^2(
+\underbrace{4}_{a} + \underbrace{r^2}_{b} +
+\underbrace{-\frac{2 \eta r^4}{4 + (1 + 2 \eta)r^2}}_{c}
+)
+$${#eq-moveout_simplified}
+
+# Relative Magnitudes
+
+Now we can calculate relative magnitudes from @eq-moveout_simplified. Terms a, b, c
+correspond to the $x^0$, $x^2$, and $x^4$ terms, respectively. Also note the $\frac{1}{4}t_0^2$
+term which multiplies the others will not affect ratios since it is a common multiplier.
+
+$$
+\frac{c}{a} = \frac{1}{4} \frac{-2 \eta r^4}{4 + (1 + 2 \eta)r^2}
+$$
+
+$$
+\frac{c}{b} = \frac{-2 \eta r^2}{4 + (1 + 2 \eta)r^2}
+$$
+
+for $x/z = 2$ and $\eta = 0.2$
+
+$$
+\frac{c}{a} = \frac{1}{4} \frac{-2 (0.2) (2)^4}{4 + (1 + 2 (0.2))(2)^2}=
+\frac{-6.4}{(4)(9.6)} \approx -0.17
+$$
+
+
+$$
+\frac{c}{b} = \frac{-2 (0.2) (2)^2}{4 + (1 + 2 (0.2))(2)^2} = \frac{-1.6}{9.6} \approx -0.17
+$$
+
+# $\eta$ Estimation
+
+:::{.callout-note appearance="simple"}
+Do you think that the magnitude of the $x^4$ -term is sufficiently large for reliable 
+estimation of the parameter $\eta$ from nonhyperbolic moveout?
+:::
+
+Given a spread to depth ratio of 2, we can use #eq-moveout_simplified to find the moveout,
+in terms of $t_0^2$, contributed by each term. Both terms a and b contribute $t_0^2$, while term
+c contributes $-.17t_0^2$. So, the ratio of non-hyperbolic moveout to hyperbolic moveout is
+
+$$
+\frac{t_0^2 (2-.17)}{t_0^2 2} = 0.915 
+$$
+
+so, the non-hyperbolic moveout times will vary by about 8% from the hyperbolic moveout times. 
+
+Whether these can be reliably estimated in practice depends on the source frequency content 
+and value of $t_0$, but I am inclined to say it would be difficult to reliably estimate $\eta$
+unless larger spread data can be obtained.
+
+# References
