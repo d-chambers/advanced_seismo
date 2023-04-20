@@ -48,18 +48,14 @@ def make_slowness_plots(theta, c11, c33, c55, rho=1, title=""):
     ax2.xaxis.set_ticks_position('top')
     ax2.xaxis.set_label_position('top')
 
-
     ax2.set_aspect('equal')
     plt.tight_layout()
-
-
 
     return fig, ax1
 
 
-
 if __name__ == "__main__":
-    theta = np.linspace(0, np.pi/2, 200)
+    theta = np.linspace(0, np.pi / 2, 200)
     # case 1
     fig1, _ = make_slowness_plots(
         theta=theta,
@@ -71,7 +67,6 @@ if __name__ == "__main__":
 
     )
     fig1.savefig('outputs/case1.png')
-
 
     fig2, _ = make_slowness_plots(
         theta=theta,

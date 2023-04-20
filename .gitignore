@@ -47,3 +47,6 @@ var/
 bin/
 bin_mpi/
 OUTPUT_FILES/
+
+# julia stuff
+Manifest.toml

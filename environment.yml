@@ -4,14 +4,10 @@ channels:
     - defaults
 dependencies:
     - pip
-    - obspy
-    - cartopy
-    - pyyaml
-    - pre-commit
-    - pyasdf
-    - pillow
-    - pypdf2
-    - pip:
-#      - git+https://github.com/adjtomo/pyatoa@devel
-#      - git+https://github.com/adjtomo/seisflows@devel
-      - -e .
+    - pandas
+    - sympy
+    - matplotlip
+    - numpy
+    - jax
+    - autograd
+

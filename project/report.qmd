@@ -1,0 +1,46 @@
+---
+title: "Advanced Sesimology: Course Project"
+date: 04/25/2023
+author:
+  - name: Derrick Chambers
+    url: https://derchambers.com
+    affiliation: Colorado School of Mines
+    affiliation-url: https://mines.edu
+
+format:
+  pdf:
+    toc: false
+    toc-depth: 1
+    number-sections: true
+    colorlinks: true
+
+bibliography: references.bib
+---
+
+# Prompt
+1. Write a ray-tracing code to calculate the exact traveltimes of reflected P- and SV-
+waves in horizontally layered VTI media. You can use any programming language you
+are comfortable with including MATLAB. Start out by specifying the take-off phase
+angle θ of a downgoing ray at the surface and then compute the corresponding phase-
+and group-velocity vectors from the exact equations. The group-velocity vector can
+be used to find the interval traveltime in the top layer and the intersection point
+of the ray with the layer’s bottom. Use Snell’s law to obtain the slowness/phase-
+velocity vector in the second layer and continue the computation downward. Note
+that to solve reflection/transmission problems in anisotropic media, it is convenient
+to express the Christoffel equation in terms of the components of the slowness vector.
+
+2. Compute the traveltimes of P- and SV-waves reflected from the bottom of the
+second layer in the following VTI model:
+
+|   | Layer Thickness (km) | $Vp_0$ | $Vs_0$ | $\epsilon$ | $\delta$ |
+|---|----------------------|-------|--------|------------|----------|
+| 1 | 0.5                  | 3.0   | 1.8    | 0.2        | 0.1      |
+| 2 | 1.0                  | 3.0   | 1.5    | 0.2        | 0.3      |
+
+You can plot the traveltimes for source-receiver offsets up to 2 km.
+
+
+Next, replace $\epsilon$ = 0.2 in layer 2 by $\epsilon$ = − 0.2 and repeat the computations. Explain the
+difference in your results and, in particular, the presence of a cusp (triplication) for
+one of the tests.
+
