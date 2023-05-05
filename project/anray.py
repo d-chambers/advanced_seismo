@@ -29,6 +29,7 @@ PHASE_TABLE_COLUMNS = {
     "delta": float,
     "vp_0": float,
     "vs_0": float,
+    "down_going": bool,
     "phase_history": str,
 }
 
@@ -92,6 +93,7 @@ PROPOGATION_COL_MAP = {
     "travel_time": "travel_time",
     "slowness_x": "slowness_x",
 }
+
 
 # --- Numpy low-level functions
 
@@ -170,7 +172,7 @@ def _get_group_velocity_array(
     vg_z = -(phase_velocity * np.cos(phase_angle) - dv * np.sin(phase_angle))
     # calc norm and angle and return
     group_vel = np.linalg.norm(np.vstack([vg_x, vg_z]).T, axis=1)
-    group_angle = np.arctan(vg_x / -vg_z)
+    group_angle = np.arctan2(vg_x, -vg_z)
     # sanity checks
     assert np.all(group_vel >= phase_velocity)
     return np.vstack([group_vel, group_angle]).T
@@ -271,7 +273,8 @@ def get_group_velocities(df):
 def _get_next_interfaces(df, interface_df):
     """Find the next interfaces coords, return x_1, z_1, and travel_time."""
     down_going = df['group_angle'] < np.pi / 2
-    direction = down_going.astype(np.int64).values
+    # direction = down_going.astype(np.int64).values
+    direction = np.where(down_going, 1, -1)
     next_ind = np.searchsorted(interface_df['z'], df['z_0']) + direction
     z_new = interface_df['z'].values[next_ind]
     # zero inds passed interface limits. This allows NaNs to propagate
@@ -294,19 +297,24 @@ def set_columns(df1, df2, col_map):
             df1[col1] = df2[col2].values
     return df1
 
+
 def _get_new_df(df, interface_df):
     """Create a new dataframe from the interface df represent next rays."""
-
 
     def _init_new(df, interface_df, up=True):
         mult = 1 if up else 2
         label = "top" if up else "bottom"
         phase_mod = df['phase'] + '+' if up else df['phase'] + '-'
         new_phase_hist = df['phase_history'] + phase_mod
+        layer_mod = (df['down_going'].astype(int) + (-1 if up else 1)) / 2
         new_df = (
-            pd.DataFrame(index=df.index + len(df)*mult, columns=df.columns)
+            pd.DataFrame(index=df.index + len(df) * mult, columns=df.columns)
             .pipe(set_columns, df, PROPOGATION_COL_MAP)
-            .assign(phase_history=new_phase_hist.values)
+            .assign(
+                phase_history=new_phase_hist.values,
+                down_going=not up,
+                layer=(df['layer'] + layer_mod).astype(int).values
+            )
         )
         cols = [f"{x}_{label}" for x in MODEL_PARAMS]
         new_df[list(MODEL_PARAMS)] = interface_df.loc[new_df['z_0'], cols].values
@@ -315,11 +323,19 @@ def _get_new_df(df, interface_df):
         return new_df
 
     idf = interface_df.set_index("z")
-    breakpoint()
     new_up = _init_new(df, idf)
     new_down = _init_new(df, idf, up=False)
+    return pd.concat([new_up, new_down], axis=0)
 
-    breakpoint()
+
+def prune_bad_solutions(df):
+    """
+    get rid of rows whose stated direction don't match the group
+    velocity vector.
+    """
+    group_angle_down_going = df['group_angle'] < np.pi / 2
+    down_going = df['down_going']
+    return df[group_angle_down_going == down_going]
 
 
 def propagate(theta, model_df, iterations=4, pure_modes=True):
@@ -340,19 +356,13 @@ def propagate(theta, model_df, iterations=4, pure_modes=True):
         # and group velocity
         df[list(PHASE_OUTPUT_COLUMNS)] = get_phase_info_from_angles(df)
         df[list(GROUP_OUTPUT_COLUMNS)] = get_group_velocities(df)
+        df = prune_bad_solutions(df)
         df[list(NEXT_INTERFACES_OUT)] = _get_next_interfaces(df, interface_df)
         # generate next iteration of dataframe
-        new_df = _get_new_df(df, interface_df).pipe(slow_finder)
+        new_df = _get_new_df(df, interface_df)
+        new_df['phase_angle'] = slow_finder(new_df)
         out.append(new_df)
-        breakpoint()
-        out.append(None)
-
-
-def find_next_point(current_point, phase_angle, phase_velocity, model):
-    """
-    Given the current point and phase velocity, find the next point.
-    """
-    pass
+    return out[:iterations]
 
 
 class SlownessFinder:
@@ -362,10 +372,10 @@ class SlownessFinder:
     Then use these curves to find horizontal slowness matches.
     """
 
-    def __init__(self, model, theta_count=2000):
+    def __init__(self, model, theta_count=2500):
         self.model = model
-        eps = np.pi/(theta_count * 10)
-        self._theta = np.linspace(-eps, np.pi + np.pi/theta_count + eps, theta_count)
+        eps = np.pi / (theta_count * 10)
+        self._theta = np.linspace(-eps, np.pi + np.pi / theta_count + eps, theta_count)
         self._slowness_dict = self._get_slowness_dict(model)
 
     def _get_slowness_dict(self, df):
@@ -378,33 +388,9 @@ class SlownessFinder:
                 slow_x = np.sin(self._theta) * 1 / phase_vel
                 key = f"{int(row['layer'])}_{phase}"
                 out[key] = slow_x
-                # slow_z = np.cos(self._theta) * 1 / phase_vel
-                # phase_slow_x_slow_z = np.stack([self._theta, slow_x, slow_z], axis=1)
-                # out[key] = phase_slow_x_slow_z
         return out
 
-    def _get_new_empty_df(self, df, interface_df):
-        """
-        Given the current (filled-in) ray table, create a new one with
-        reflections/transmissions.
-        """
-        breakpoint()
-
-
-    def _get_interpolated_phases(self):
-        """Get interpolated phases for downgoing/upgoing rays."""
-
-    def __call__(self, df, interface_df):
-        """
-        Given a dataframe with horizontal slowness, calculate phase and
-        group velocities.
-        """
-
-        keys = df['layer'].astype(str) + '_' + df['phase']
-        slowness_x = df['slowness_x'].values[:, None]
-        arrays = np.array([self._slowness_dict[x] for x in keys])
-        # figure out where horizontal slowness values are equal.
-        diff = slowness_x - arrays
+    def _get_args(self, diff, down_going):
         sign = np.sign(diff)
         sign_change = sign - np.roll(sign, axis=1, shift=1)
         # ensure there is one down-going and one up going
@@ -412,28 +398,35 @@ class SlownessFinder:
         sign_maxs = np.max(sign_change, axis=1, keepdims=True)
         assert np.all(np.any(sign_change == sign_mins, axis=1))
         assert np.all(np.any(sign_change == sign_maxs, axis=1))
-        argmins = np.argmin(sign_change, axis=1)
-        argmaxs = np.argmax(sign_change, axis=1)
+        argmin = np.argmin(sign_change, axis=1)
+        argmax = np.argmax(sign_change, axis=1)
+        out = np.where(down_going, argmin, argmax)
+        return out
 
+    def extrapolate_theta(self, args, diffs):
+        """Extrapolate values of theta"""
+        inds = np.arange(len(diffs))
+        args_p = args - 1
+        args_a = args + 1
+        theta_p, theta_a = self._theta[args_p], self._theta[args_a]
+        diff_p, diff_a = diffs[inds, args_p], diffs[inds, args_a]
+        # use y = ax + b; x is theta, y is diff
+        slope = (diff_a - diff_p) / (theta_a - theta_p)
+        y_intercept = diff_p - slope * theta_p
+        theta_out = -y_intercept / slope
+        assert np.all((theta_out > theta_p) & (theta_out < theta_a))
+        return theta_out
 
-
-        breakpoint()
-        # get theta values for down and up going slowness angles
-
-
-
-        up_thetas = self._theta[s]
-
-
-
-
-        ss=  np.sum(sign_change == np.max(sign_change, axis=1, keepdims=True), 1)
-
-
-        argmin = np.argmin()
-
-
-        # signdiff = sign - sign.diff()
-
-        breakpoint()
-
+    def __call__(self, df):
+        """
+        Given a dataframe with horizontal slowness, calculate phase and
+        group velocities.
+        """
+        keys = df['layer'].astype(str) + '_' + df['phase']
+        slowness_x = df['slowness_x'].values[:, None]
+        arrays = np.array([self._slowness_dict[x] for x in keys])
+        # figure out where horizontal slowness values are equal.
+        diffs = slowness_x - arrays
+        args = self._get_args(diffs, df['down_going'].values)
+        thetas = self.extrapolate_theta(args, diffs)
+        return thetas

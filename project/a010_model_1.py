@@ -14,9 +14,9 @@ if __name__ == "__main__":
     theta = np.linspace(eps, np.pi/2-eps, 200)
     model = pd.read_csv(local.model_1_path)
 
+    breakpoint()
     out = anray.propagate(theta, model)
 
-    breakpoint()
 
 
 
