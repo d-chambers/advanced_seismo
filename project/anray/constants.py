@@ -39,14 +39,8 @@ MODEL_PARAMS = (
     "delta",
     "epsilon",
 )
-COLS_FOR_GETTING_PHASE_VELOCITY = (
-    'phase_angle',
-    *MODEL_PARAMS
-)
-COLS_FOR_GETTING_GROUP_VELOCITY = (
-    "phase_velocity",
-    *COLS_FOR_GETTING_PHASE_VELOCITY
-)
+COLS_FOR_GETTING_PHASE_VELOCITY = ("phase_angle", *MODEL_PARAMS)
+COLS_FOR_GETTING_GROUP_VELOCITY = ("phase_velocity", *COLS_FOR_GETTING_PHASE_VELOCITY)
 PHASE_OUTPUT_COLUMNS = (
     "phase_velocity",
     "slowness_x",
@@ -58,10 +52,10 @@ GROUP_OUTPUT_COLUMNS = (
 )
 NEXT_INTERFACES_OUT = (
     "x_1",
-    'z_1',
-    'travel_time',
+    "z_1",
+    "travel_time",
 )
-PHASE_MODIFIER_DICT = {'p': 1, 'sv': -2}
+PHASE_MODIFIER_DICT = {"p": 1, "sv": -2}
 PROPOGATION_COL_MAP = {
     "parent_id": "index",
     "x_0": "x_1",

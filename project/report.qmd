@@ -1,6 +1,6 @@
 ---
 title: "Advanced Sesimology: Course Project"
-date: 04/25/2023
+date: 05/05/2023
 author:
   - name: Derrick Chambers
     url: https://derchambers.com
@@ -39,8 +39,52 @@ second layer in the following VTI model:
 
 You can plot the traveltimes for source-receiver offsets up to 2 km.
 
-
 Next, replace $\epsilon$ = 0.2 in layer 2 by $\epsilon$ = − 0.2 and repeat the computations. Explain the
 difference in your results and, in particular, the presence of a cusp (triplication) for
 one of the tests.
 
+
+# Code
+
+The attached code was written in the Python programming language. It  can be run by first installing the environment using [conda](https://docs.conda.io/en/latest/) and then using the environment.yaml file like so:
+
+```bash
+conda env create -f environment.yaml
+conda activate anray
+```
+
+Scrips `a010_model_1.py` and `a020_model_2.py` can then be run to generate figures.
+
+```bash
+python a010_model_1.py
+python a020_model_2.py
+```
+
+Then the report PDF can then be generated with [quarto](https://quarto.org/):
+
+```bash
+quarto render report.qmd
+```
+
+# Analysis
+
+The travel times for the direct P (P+P+P-P-) and S (S+S+S-S-) phases reflected off the bottom layer in the models are shown in @fig-tt-1 and @fig-tt-2. The curves in @fig-tt-1 don't look much different from isotropic travel times for model one, but model two has a strong cusp, meaning it becomes multi-valued. 
+
+![Model 1 traveltime curves](outputs/a010_travel_curves.png){#fig-tt-1}
+
+![Model 2 traveltime curves](outputs/a020_travel_curves.png){#fig-tt-2}
+
+The slowness surfaces for both models help explain why (@fig-slow-mod-1 and @fig-slow-mod-1). The group velocity vector governs the ray trajectory and is always perpendicular to the slowness surface. The S slowness surface in layer 2 of model two is concave which causes many group velocity vectors to point in the opposite x direction, meaning the rays reverse their horizontal direction. 
+
+![Model 1 slowness surfaces](outputs/a010_slowness_surface.png){#fig-slow-mod-1}
+
+![Model 2 slowness surfaces](outputs/a020_slowness_surface.png){#fig-slow-mod-2}
+
+When compared to the S ray paths of model 1 (@fig-raypaths-1), this oddity is clearly seen in @fig-raypaths-2 where the S ray paths switch directions when transmitting through the first interface on the down-going path and again on the up-going path.  
+
+![Model 1 ray paths](outputs/a010_raypaths.png){#fig-raypath-1}
+
+![Model 2 ray paths](outputs/a020_raypaths.png){#fig-raypath-2}
+
+
+plotting the arrival times of the P-P-P+P+ and S-S-S+S+ (note the +/- indicate upgoing or downgoing rays for a complete layer, respectively):

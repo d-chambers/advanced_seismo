@@ -6,20 +6,18 @@ import pandas as pd
 import anray
 import local
 
-
 if __name__ == "__main__":
     # get starting phase angles
     eps = np.deg2rad(1)
-    theta = np.linspace(-np.pi/2+eps, np.pi/2-eps, 201)
+    theta = np.linspace(-np.pi / 2 + eps, np.pi / 2 - eps, 201)
     # load model
     model = pd.read_csv(local.model_1_path)
     # shoot rays
-    breakpoint()
     out = anray.propagate(theta, model)
     # plot
-    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-    anray.plot_phase(out[-1], 'p-p-p+p+', ax=axes[0])
-    anray.plot_phase(out[-1], 's-s-s+s+', ax=axes[1])
+    fig, axes = plt.subplots(1, 2, figsize=(7.5, 3.5))
+    anray.plot_phase(out[-1], "p-p-p+p+", ax=axes[0], color='blue')
+    anray.plot_phase(out[-1], "s-s-s+s+", ax=axes[1], color='red')
     plt.tight_layout()
     fig.savefig(local.travel_curve_model_1)
 
@@ -29,10 +27,8 @@ if __name__ == "__main__":
     plt.tight_layout()
     fig.savefig(local.slowness_surface_1)
 
-
-
-
-
-
-
-    pass
+    # plot rays
+    fig, *_ = anray.plot_rays(
+        out, model, phase_dict={"p-p-p+p+": "blue", "s-s-s+s+": "red"}
+    )
+    fig.savefig(local.ray_path_1)
