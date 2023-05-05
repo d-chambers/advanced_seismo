@@ -8,91 +8,9 @@ import matplotlib.pyplot as plt
 
 import pandas as pd
 
-# --- Constants
-
-PHASE_TABLE_COLUMNS = {
-    "phase": str,
-    "x_0": float,
-    "z_0": float,
-    "phase_angle": float,
-    "phase_velocity": float,
-    "slowness_x": float,
-    "slowness_z": float,
-    "group_angle": float,
-    "group_velocity": float,
-    "x_1": float,
-    "z_1": float,
-    "layer": int,
-    "travel_time": float,
-    "parent_id": int,
-    "epsilon": float,
-    "delta": float,
-    "vp_0": float,
-    "vs_0": float,
-    "down_going": bool,
-    "phase_history": str,
-}
-
-INTERFACE_COLUMNS = (
-    "vp_0_top",
-    "vp_0_bottom",
-    "vs_0_top",
-    "vs_0_bottom",
-    "epsilon_top",
-    "epsilon_bottom",
-    "delta_top",
-    "delta_bottom",
-    "z",
-    "is_top",
-    "is_bottom",
-)
-
-MODEL_PARAMS = (
-    "vp_0",
-    "vs_0",
-    "delta",
-    "epsilon",
-)
-
-# columns needed for calculating phase velocity.
-COLS_FOR_GETTING_PHASE_VELOCITY = (
-    'phase_angle',
-    *MODEL_PARAMS
-)
-
-# columns needed for calculating group velocity
-COLS_FOR_GETTING_GROUP_VELOCITY = (
-    "phase_velocity",
-    *COLS_FOR_GETTING_PHASE_VELOCITY
-)
-
-PHASE_OUTPUT_COLUMNS = (
-    "phase_velocity",
-    "slowness_x",
-    "slowness_z",
-)
-
-GROUP_OUTPUT_COLUMNS = (
-    "group_velocity",
-    "group_angle",
-)
-
-NEXT_INTERFACES_OUT = (
-    "x_1",
-    'z_1',
-    'travel_time',
-)
-
-PHASE_MODIFIER_DICT = {'p': 1, 'sv': -2}
-
-PROPOGATION_COL_MAP = {
-    "parent_id": "index",
-    "x_0": "x_1",
-    "z_0": "z_1",
-    "phase": "phase",
-    "travel_time": "travel_time",
-    "slowness_x": "slowness_x",
-}
+from .constants import PHASE_TABLE_COLUMNS, INTERFACE_COLUMNS, MODEL_PARAMS, \
+    COLS_FOR_GETTING_PHASE_VELOCITY, COLS_FOR_GETTING_GROUP_VELOCITY, PHASE_OUTPUT_COLUMNS, GROUP_OUTPUT_COLUMNS, \
+    NEXT_INTERFACES_OUT, PROPOGATION_COL_MAP
 
 
 # --- Numpy low-level functions
@@ -246,11 +164,10 @@ def get_phase_info_from_angles(df):
     assert not pd.isnull(phase_angles).any(), "Missing phase angles found"
     phase_dict = _get_phase_array_dict(df)
     phase_velocity = _get_exact_phase_velocity(**phase_dict)
-    slowness = 1 / phase_velocity
-    slow_x = np.sin(phase_angles) * slowness
+    slow_x = np.sin(phase_angles) / phase_velocity
     # I use -z because the convention for VTI (phase angles) is measuring
     # theta from -z axis.
-    slow_z = -np.cos(phase_angles) * slowness
+    slow_z = -np.cos(phase_angles) / phase_velocity
     return np.vstack([phase_velocity, slow_x, slow_z]).T
 
 
@@ -264,6 +181,7 @@ def get_group_velocities(df):
         v: df[v].values.astype(float)
         for v in COLS_FOR_GETTING_GROUP_VELOCITY
     }
+    phase_dict['modifier'] = np.where(df['phase'] == 'p', 1, -1)
     return _get_group_velocity_array(**phase_dict)
 
 
@@ -272,8 +190,8 @@ def get_group_velocities(df):
 
 def _get_next_interfaces(df, interface_df):
     """Find the next interfaces coords, return x_1, z_1, and travel_time."""
-    down_going = df['group_angle'] < np.pi / 2
-    # direction = down_going.astype(np.int64).values
+    down_going = abs(df['group_angle']) < np.pi / 2
+    # get int to increment layer number
     direction = np.where(down_going, 1, -1)
     next_ind = np.searchsorted(interface_df['z'], df['z_0']) + direction
     z_new = interface_df['z'].values[next_ind]
@@ -282,8 +200,10 @@ def _get_next_interfaces(df, interface_df):
     z_new[(next_ind >= len(interface_df)) | (next_ind < 0)] = np.NAN
     # get travel time, new x coords.
     z_diff = z_new - df['z_0']
-    travel_time = np.abs(z_diff) / np.cos(df['group_angle']) + df['travel_time']
-    x_diff = travel_time * df['group_velocity'] * np.sin(df['group_angle'])
+    # get time it takes the ray to travel
+    tdiff = np.abs(z_diff / (np.cos(df['group_angle']) * df['group_velocity']))
+    x_diff = tdiff * df['group_velocity'] * np.sin(df['group_angle'])
+    travel_time = df['travel_time'] + tdiff
     x_new = df['x_0'] + x_diff
     return np.vstack([x_new, z_new, travel_time]).T
 
@@ -333,7 +253,7 @@ def prune_bad_solutions(df):
     get rid of rows whose stated direction don't match the group
     velocity vector.
     """
-    group_angle_down_going = df['group_angle'] < np.pi / 2
+    group_angle_down_going = np.abs(df['group_angle']) < (np.pi / 2)
     down_going = df['down_going']
     return df[group_angle_down_going == down_going]
 
@@ -349,20 +269,23 @@ def propagate(theta, model_df, iterations=4, pure_modes=True):
     # setup propagation
     slow_finder = SlownessFinder(model_df)
     interface_df = get_interface_df(model_df)
-    out = [init_phase_table(theta, interface_df)]
-    while len(out) < iterations + 1:
-        df = out[-1]
+    out = []
+    stack = [init_phase_table(theta, interface_df)]
+    while len(stack) < iterations + 1:
+        df = stack[-1]
         # given a dataframe with know phase angles, find phase velocity
         # and group velocity
         df[list(PHASE_OUTPUT_COLUMNS)] = get_phase_info_from_angles(df)
         df[list(GROUP_OUTPUT_COLUMNS)] = get_group_velocities(df)
         df = prune_bad_solutions(df)
         df[list(NEXT_INTERFACES_OUT)] = _get_next_interfaces(df, interface_df)
+        out.append(df)
         # generate next iteration of dataframe
         new_df = _get_new_df(df, interface_df)
         new_df['phase_angle'] = slow_finder(new_df)
-        out.append(new_df)
-    return out[:iterations]
+        new_df = new_df[~pd.isnull(new_df['phase_angle'])]
+        stack.append(new_df)
+    return out
 
 
 class SlownessFinder:
@@ -374,33 +297,43 @@ class SlownessFinder:
 
     def __init__(self, model, theta_count=2500):
         self.model = model
-        eps = np.pi / (theta_count * 10)
-        self._theta = np.linspace(-eps, np.pi + np.pi / theta_count + eps, theta_count)
-        self._slowness_dict = self._get_slowness_dict(model)
+        eps = np.pi/100
+        max_vals = np.pi
+        self._theta = np.linspace(-max_vals, max_vals - max_vals/theta_count, theta_count)
+        self._x_slowness_dict, self._z_slowness_dict = self._get_slowness_dict(model)
 
     def _get_slowness_dict(self, df):
-        out = {}
+        x_slow = {}
+        z_slow = {}
         for _, row in df.iterrows():
             for phase, mod in zip(['p', 's'], [1, -1]):
                 vars = dict(row)
                 vars.pop("thickness"), vars.pop("layer")
                 phase_vel = _get_exact_phase_velocity(self._theta, modifier=mod, **vars)
-                slow_x = np.sin(self._theta) * 1 / phase_vel
                 key = f"{int(row['layer'])}_{phase}"
-                out[key] = slow_x
-        return out
+                x_slow[key] = np.sin(self._theta) / phase_vel
+                z_slow[key] = np.cos(self._theta) / phase_vel
+        return x_slow, z_slow
 
     def _get_args(self, diff, down_going):
         sign = np.sign(diff)
-        sign_change = sign - np.roll(sign, axis=1, shift=1)
+        roll = np.roll(sign, axis=1, shift=1)
+        # roll[:, 0] = sign[:, 0]  # don't induce wrap around diff
+        sign_change = sign - roll
+        # there should be exactly two solutions; when it becomes
+        # multi-valued my code fails.
+        assert np.all(np.abs(sign_change).sum(axis=1) <= 4)
         # ensure there is one down-going and one up going
         sign_mins = np.min(sign_change, axis=1, keepdims=True)
         sign_maxs = np.max(sign_change, axis=1, keepdims=True)
-        assert np.all(np.any(sign_change == sign_mins, axis=1))
-        assert np.all(np.any(sign_change == sign_maxs, axis=1))
+        assert np.all(sign_mins == -2) and np.all(sign_maxs == 2)
+        # assert np.all(np.any(sign_change == sign_mins, axis=1))
+        # assert np.all(np.any(sign_change == sign_maxs, axis=1))
         argmin = np.argmin(sign_change, axis=1)
         argmax = np.argmax(sign_change, axis=1)
         out = np.where(down_going, argmin, argmax)
+        # no args should be on the edge of the array.
+        # assert np.all((out > 0) & (out < (len(self._theta) - 1)))
         return out
 
     def extrapolate_theta(self, args, diffs):
@@ -414,7 +347,10 @@ class SlownessFinder:
         slope = (diff_a - diff_p) / (theta_a - theta_p)
         y_intercept = diff_p - slope * theta_p
         theta_out = -y_intercept / slope
-        assert np.all((theta_out > theta_p) & (theta_out < theta_a))
+        bad_inds = ~((theta_out > theta_p) & (theta_out < theta_a))
+        # for bad indicies just use closest value
+        theta_out[bad_inds] = np.NaN  # failed on these, just toss
+        # assert not np.any(bad_inds)
         return theta_out
 
     def __call__(self, df):
@@ -424,9 +360,9 @@ class SlownessFinder:
         """
         keys = df['layer'].astype(str) + '_' + df['phase']
         slowness_x = df['slowness_x'].values[:, None]
-        arrays = np.array([self._slowness_dict[x] for x in keys])
+        slow_arrays = np.array([self._x_slowness_dict[x] for x in keys])
         # figure out where horizontal slowness values are equal.
-        diffs = slowness_x - arrays
+        diffs = slowness_x - slow_arrays
         args = self._get_args(diffs, df['down_going'].values)
         thetas = self.extrapolate_theta(args, diffs)
         return thetas
